@@ -1,5 +1,9 @@
-from request_system.views import RequestViewSet
-from rest_framework import routers
+from django.urls import path, include
 
-router = routers.DefaultRouter()
-router.register(r"requests", RequestViewSet, basename="requests")
+urlpatterns = [
+    path("accounts/", include("accounts.urls")),
+    path("maintenance/", include("maintenance.urls")),
+    path("location/", include("buildings.urls")),
+    path("requests/", include("request_system.urls")),
+    path("calendar/", include("calendar_system.urls")),
+]

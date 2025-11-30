@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     "api",
     "maintenance",
     "request_system",
+    "notifications.apps.NotificationsConfig",
+    "calendar_system.apps.CalendarSystemConfig",
 ]
 
 MIDDLEWARE = [
