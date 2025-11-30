@@ -21,6 +21,7 @@ class Request(models.Model):
     requester = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="requests"
     )
+    
     request_type = models.CharField(max_length=50, choices=REQUEST_TYPES)
     building = models.ForeignKey(
         Building, on_delete=models.SET_NULL, null=True, blank=True
@@ -34,7 +35,7 @@ class Request(models.Model):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="assigned_requests",
+        related_name="request_system_assigned_requests",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

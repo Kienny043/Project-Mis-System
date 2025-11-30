@@ -1,8 +1,14 @@
 from django.db import models
 from accounts.models import User
+from buildings.models import Building, Floor, Room
 
 
 class MaintenanceRequest(models.Model):
+    ROLE_CHOICES = [
+        ("student", "Student"),
+        ("instructor", "Instructor"),
+        ("staff", "Staff"),
+    ]
 
     STATUS_CHOICES = [
         ("pending", "Pending"),
@@ -11,8 +17,8 @@ class MaintenanceRequest(models.Model):
     ]
 
     # Request info
-    requester_name = models.CharField(max_length=255)
-    requester_role = models.CharField(max_length=50)  # student, staff, instructor
+    requester_name = models.CharField(max_length=100)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     section = models.CharField(max_length=50, blank=True, null=True)
     student_id = models.CharField(max_length=50, blank=True, null=True)
 
@@ -20,9 +26,9 @@ class MaintenanceRequest(models.Model):
     issue_photo = models.ImageField(upload_to="issue_photos/", null=True, blank=True)
 
     # Location
-    building = models.CharField(max_length=100)
-    floor = models.CharField(max_length=50, null=True, blank=True)
-    room = models.CharField(max_length=100)
+    building = models.ForeignKey(Building, on_delete=models.SET_NULL, null=True)
+    floor = models.ForeignKey(Floor, on_delete=models.SET_NULL, null=True, blank=True)
+    room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, blank=True)
 
     # Status & timestamps
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
@@ -35,7 +41,7 @@ class MaintenanceRequest(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="assigned_requests",
+        related_name="maintenance_assigned_requests",
     )
 
     # Completion details

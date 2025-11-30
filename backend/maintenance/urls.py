@@ -7,8 +7,8 @@ from .views import (
 )
 
 urlpatterns = [
-    path("create/", CreateRequestView.as_view()),
-    path("all/", ListRequestsView.as_view()),
-    path("claim/<int:pk>/", ClaimRequestView.as_view()),
-    path("complete/<int:pk>/", CompleteRequestView.as_view()),
+    path("requests/", ListRequestsView.as_view(), name="list-requests"),
+    path("requests/create/", CreateRequestView.as_view(), name="create-request"),
+    path("requests/<int:pk>/claim/", ClaimRequestView.as_view(), name="claim-request"),
+    path("requests/<int:pk>/complete/", CompleteRequestView.as_view(), name="complete-request"),
 ]

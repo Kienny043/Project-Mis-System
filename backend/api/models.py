@@ -21,9 +21,9 @@ class MaintenanceRequest(models.Model):
     section = models.CharField(max_length=50, blank=True, null=True)
     student_id = models.CharField(max_length=20, blank=True, null=True)
 
-    building = models.ForeignKey(Building, on_delete=models.SET_NULL, null=True)
-    floor = models.ForeignKey(Floor, on_delete=models.SET_NULL, null=True, blank=True)
-    room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, blank=True)
+    # building = models.ForeignKey(Building, on_delete=models.SET_NULL, null=True)
+    # floor = models.ForeignKey(Floor, on_delete=models.SET_NULL, null=True, blank=True)
+    # room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, blank=True)
 
     description = models.TextField()
     image = models.ImageField(upload_to="request_images/", null=True, blank=True)
