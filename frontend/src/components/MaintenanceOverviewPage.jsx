@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate,Link } from 'react-router-dom';
 import Header from './Header';
+import Footer from './Footer.jsx'
 
 export default function ManagementOverview({ onNavigate }) {
   const cards = [
@@ -23,7 +24,7 @@ export default function ManagementOverview({ onNavigate }) {
 
   return (<>
     <Header showSearch={false} />
-    <div className="p-8">
+    <div className="p-6 max-w-7xl min-h-screen flex flex-col mx-auto height: 100vh;">
       <h1 className="text-3xl font-bold mb-6">Management</h1>
       <p className="mb-8 text-gray-600">
         Manage the core resources of the maintenance system — staff, buildings, and complaints.
@@ -49,6 +50,7 @@ export default function ManagementOverview({ onNavigate }) {
         ))}
       </div>
     </div>
+    <Footer/>
     </>
   );
 }

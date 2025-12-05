@@ -31,8 +31,15 @@ function Header({ showSearch = false }) {
     setShowProfileMenu(false);
   };
 
+  const handleUserAccount = () => {
+    navigate('/user-accounts');
+    setShowProfileMenu(false);
+  };
+
   // Check if user is admin
-  const isAdmin = user?.role === 'admin' || user?.role === 'administrator';
+  const isAdmin = user?.role === 'admin';
+  const isStaff = user?.role === 'staff';
+
 
   return (
     <div className="relative">
@@ -87,15 +94,6 @@ function Header({ showSearch = false }) {
                           <p className="text-xs text-gray-400">{user?.email}</p>
                         </div>
 
-                        {/* Account Button */}
-                        <button
-                          onClick={handleAccount}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors text-gray-700 flex items-center gap-2"
-                        >
-                          <span>⚙️</span>
-                          Account Settings
-                        </button>
-
                         {/* Register Button (Admin only) */}
                         {isAdmin && (
                           <button
@@ -107,7 +105,26 @@ function Header({ showSearch = false }) {
                           </button>
                         )}
 
-                        {/* Logout Button */}
+                        {/* Account Settings */}
+                        {isStaff ? (
+                          <button
+                            onClick={handleAccount}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors text-gray-700 flex items-center gap-2"
+                          >
+                            <span>⚙️</span>
+                            Account Settings
+                          </button>
+                        ) : (
+                          <button
+                            onClick={handleUserAccount}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors text-gray-700 flex items-center gap-2"
+                          >
+                            <span>⚙️</span>
+                            Account Settings
+                          </button>
+                        )}
+
+                        {/* Logout */}
                         <button
                           onClick={handleLogout}
                           className="w-full text-left px-4 py-2 hover:bg-red-50 transition-colors text-red-600 flex items-center gap-2 border-t border-gray-200 mt-1"
@@ -127,7 +144,7 @@ function Header({ showSearch = false }) {
                           Login
                         </button>
 
-                        {/* Register Button (Users/Staff) */}
+                        {/* Register Button */}
                         <button
                           onClick={handleRegister}
                           className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors text-gray-700 flex items-center gap-2"

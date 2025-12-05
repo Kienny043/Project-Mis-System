@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Eye, Edit2, UserPlus, X, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
+import Footer from '../components/Footer.jsx'
 
 const ComplaintsPage = ({ onNavigate }) => {
   const [complaints, setComplaints] = useState([]);
@@ -254,7 +255,8 @@ const ComplaintsPage = ({ onNavigate }) => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <>
+    <div className="p-6 max-w-7xl min-h-screen flex flex-col mx-auto height: 100vh;">
       <div className="mb-6">
         <button className="text-blue-600 hover:text-blue-800 mb-4 flex items-center gap-1">
           <Link to={`/management/`}>
@@ -590,7 +592,9 @@ const ComplaintsPage = ({ onNavigate }) => {
           </div>
         </div>
       )}
-    </div>
+    </div>  
+    <Footer/>
+    </>
   );
 };
 

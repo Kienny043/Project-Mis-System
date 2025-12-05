@@ -21,14 +21,29 @@ function Login() {
 
     const result = await login(username, password);
 
-    if (result.success) {
-      console.log('Login successful, navigating to home...');
+  if (result.success) {
+    console.log('Login successful, navigating based on role...');
+    
+    // Get the user data from localStorage (it was just set by login())
+    const userData = JSON.parse(localStorage.getItem('user'));
+    const userRole = userData?.role?.toLowerCase().trim() || 'user';
+    
+    console.log('User role detected:', userRole);
+    
+    // Role-based navigation
+    if (userRole === 'admin' || userRole === 'administrator') {
+      navigate('/home');
+    } else if (userRole === 'staff' || userRole === 'maintenance staff' || userRole.includes('staff')) {
       navigate('/home');
     } else {
-      console.error('Login failed:', result.error);
-      setError(result.error || 'Login failed. Please check your credentials.');
+      // Default to user dashboard
+      navigate('/public-home');
     }
-    
+  } else {
+    console.error('Login failed:', result.error);
+    setError(result.error || 'Login failed. Please check your credentials.');
+  }
+      
     setLoading(false);
   };
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Header from './Header.jsx';
 import Logo from '../images/Logo.png';
 import api, { maintenanceAPI, requestAPI } from '../api/axios';  // ✅ Import from axios.js
+import Footer from '../components/Footer.jsx'
 
 
 function Dashboard() {
@@ -333,12 +334,6 @@ function Dashboard() {
                   📅 View Calendar
                 </Link>
                 <Link
-                  to="/submit-request"
-                  className="block w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-xl transition-colors text-center font-medium"
-                >
-                  ➕ New Request
-                </Link>
-                <Link
                   to="/dashboard"
                   className="block w-full bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-xl transition-colors text-center font-medium"
                 >
@@ -440,6 +435,7 @@ function Dashboard() {
           </div>
         </div>
       )}
+      <Footer/>
     </div>
   );
 }

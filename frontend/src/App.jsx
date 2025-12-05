@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import Login from './components/Login.jsx';
@@ -13,6 +13,11 @@ import ComplaintsPage from './pages/ComplaintsPage.jsx';
 import BuildingsPage from './pages/BuildingsPage.jsx';
 import StaffersPage from './pages/StaffersPage.jsx';
 import TrackRequest from './pages/TrackRequest.jsx';
+import AccountSettingsDashboard from './components/Account.jsx';
+import UserDashboard from './components/UserDashboard.jsx'
+import UserAccountSettingsDashboard from './components/UserProfile.jsx'
+import UserHome from './pages/UserHome.jsx'
+import AnalyticsPage from './pages/AnalyticsPage.jsx';
 
 function PrivateRoute({ children, allowedRoles }) {
   const { isAuthenticated, user } = useAuth();
@@ -87,7 +92,7 @@ function Sidebar() {
     
     // User navigation (default)
     return [
-      { path: '/home', label: 'Dashboard' },
+      { path: '/user-dashboard', label: 'Dashboard' },
       { path: '/public-home', label: 'Home' },
       { path: '/track-requests', label: 'Track Requests' },
       { path: '/submit-request', label: '+ Submit Request' }
@@ -153,6 +158,23 @@ function Sidebar() {
   );
 }
 
+function RoleBasedDashboard() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  React.useEffect(() => {
+    const role = user?.role?.toLowerCase().trim() || 'user';
+    
+    // Redirect users to their specific dashboard
+    if (role === 'user') {
+      navigate('/public-home', { replace: true });
+    }
+    // Admin and staff stay on /home
+  }, [user, navigate]);
+  
+  return <Dashboard />;
+}
+
 function AppContent() {
   const { isAuthenticated } = useAuth();
 
@@ -192,7 +214,7 @@ function AppContent() {
             path="/home"
             element={
               <PrivateRoute>
-                <Dashboard />
+                <RoleBasedDashboard />
               </PrivateRoute>
             }
           />
@@ -203,6 +225,22 @@ function AppContent() {
             element={
               <PrivateRoute allowedRoles={['staff', 'maintenance staff', 'admin', 'administrator']}>
                 <MaintenanceList />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/user-dashboard"
+            element={
+              <PrivateRoute allowedRoles={['user']}>
+                <UserDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/user-accounts/"
+            element={
+              <PrivateRoute allowedRoles={['user']}>
+                <UserAccountSettingsDashboard />
               </PrivateRoute>
             }
           />
@@ -239,10 +277,7 @@ function AppContent() {
             path="/analytics"
             element={
               <PrivateRoute allowedRoles={['admin', 'administrator']}>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Analytics</h1>
-                  <p className="text-gray-600 mt-4">Charts and reports coming soon...</p>
-                </div>
+                <AnalyticsPage/>
               </PrivateRoute>
             }
           />
@@ -252,10 +287,7 @@ function AppContent() {
             path="/public-home"
             element={
               <PrivateRoute>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Public Home</h1>
-                  <p className="text-gray-600 mt-4">Public landing page coming soon...</p>
-                </div>
+                <UserHome/>
               </PrivateRoute>
             }
           />
@@ -273,10 +305,7 @@ function AppContent() {
             path="/account"
             element={
               <PrivateRoute>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Account Settings</h1>
-                  <p className="text-gray-600 mt-4">Profile management coming soon...</p>
-                </div>
+                <AccountSettingsDashboard/>
               </PrivateRoute>
             }
           />

@@ -24,6 +24,44 @@ class ListRequestsView(generics.ListAPIView):
     serializer_class = MaintenanceRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+class ListUserRequestsView(generics.ListAPIView):
+    serializer_class = MaintenanceRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        
+        # Try to get role from staff_profile or check if superuser
+        try:
+            # Check if user is superuser (admin)
+            if user.is_superuser or user.is_staff:
+                return MaintenanceRequest.objects.all().order_by("-created_at")
+            
+            # Check if user has staff_profile
+            if hasattr(user, 'staff_profile'):
+                role = user.staff_profile.role.lower()
+                # Staff and maintenance staff see all requests
+                if 'staff' in role or role == 'admin' or role == 'administrator':
+                    return MaintenanceRequest.objects.all().order_by("-created_at")
+        except AttributeError:
+            pass  # User doesn't have staff_profile, treat as regular user
+        
+        # Regular users see only their own requests
+        return MaintenanceRequest.objects.filter(
+            requester_name__iexact=user.username
+        ).order_by("-created_at")
+
+class AnalyticsView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+    
+    def get(self, request):
+        # Pre-calculated analytics
+        # This would be more efficient than processing on frontend
+        return Response({
+            'avg_response_time': ...,
+            'avg_completion_time': ...,
+            # etc.
+        })
 
 # Staff claims a request
 class ClaimRequestView(APIView):

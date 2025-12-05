@@ -1,357 +1,447 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Edit2, UserPlus, X, Download } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CheckCircle, Clock, Package, User, Calendar, MapPin, FileText, ImageIcon } from 'lucide-react';
 import api from '../api/axios';
-import Header from '../components/Header';
+import Footer from '../components/Footer.jsx'
 
-const TrackRequest = ({ onNavigate }) => {
-  const [complaints, setComplaints] = useState([]);
-  const [buildings, setBuildings] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedComplaint, setSelectedComplaint] = useState(null);
+function TrackRequest() {
+  const [requests, setRequests] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState(null);
- 
+  const [error, setError] = useState(null);
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath || imagePath.trim() === '') return null;
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    return `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${imagePath}`;
-  };
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
   useEffect(() => {
-    initializeData();
+    fetchUserRequests();
   }, []);
 
-  const initializeData = async () => {
+  const fetchUserRequests = async () => {
     try {
       setLoading(true);
-      const profile = await fetchUserProfile();
-      setUserRole(profile.role);
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
       
+      // Use '/maintenance/requests/my/' if you created Option 2 endpoint
+      // Or use '/maintenance/requests/' if you modified the existing view
+      const response = await api.get('/maintenance/requests/');
       
-      await fetchComplaints();
-      await fetchBuildings();
-    } catch (error) {
-      console.error('Error initializing data:', error);
+      // Handle both array and paginated responses
+      const requestsData = Array.isArray(response.data) 
+        ? response.data 
+        : response.data.results || [];
+
+      const requesterName = userData.first_name && userData.last_name
+        ? `${userData.first_name} ${userData.last_name}`.trim()
+        : userData.username?.toLowerCase() || '';
+          
+      // Filter requests by requester_name matching current user
+      const userRequests = requestsData.filter(
+        req => req.requester_name?.toLowerCase() === requesterName
+      );
+      
+      setRequests(userRequests);
+      if (userRequests.length > 0) {
+        setSelectedRequest(userRequests[0]);
+      }
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching requests:', err);
+      setError('Failed to load your requests. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchUserProfile = async () => {
-    try {
-      const response = await api.get('/accounts/staffprofile/');
-      const profileData = response.data;
-      const userId = profileData.user?.id || profileData.user;
-      const role = (profileData.role || 'staff').toLowerCase();
-      
-      return { role: role, userId: userId };
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-      return { role: 'staff', userId: null };
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
     }
+    return `${API_BASE_URL}${imagePath}`;
   };
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'on_hold': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getStatusStep = (status) => {
+    const steps = {
+      'pending': 0,
+      'in_progress': 1,
+      'completed': 2
+    };
+    return steps[status] || 0;
   };
 
-  const getRoleBadgeColor = (role) => {
-    switch(role) {
-      case 'student': return 'bg-blue-100 text-blue-800';
-      case 'instructor': return 'bg-purple-100 text-purple-800';
-      case 'staff': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
-  const formatStatusText = (status) => {
-    return status ? status.replace(/_/g, ' ').toUpperCase() : 'NONE';
-  };
-
-  const fetchComplaints = async () => {
-    try {
-      const response = await api.get('/maintenance/requests/', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        }
-      });
-      
-      const data = response.data;
-      let complaintsArray = [];
-      
-      if (Array.isArray(data)) {
-        complaintsArray = data;
-      } else if (data && Array.isArray(data.results)) {
-        complaintsArray = data.results;
-      }
-      
-      setComplaints(complaintsArray);
-    } catch (error) {
-      console.error('Error fetching complaints:', error);
-      setComplaints([]);
-    }
-  };
-
-
-
-  const fetchBuildings = async () => {
-    try {
-      const response = await api.get('/location/buildings/', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        }
-      });
-
-      const buildingsData = Array.isArray(response.data) 
-        ? response.data 
-        : response.data.results || [];
-      setBuildings(buildingsData);
-    } catch (error) {
-      console.error('Error fetching buildings:', error);
-      setBuildings([]);
-    }
-  };
-
-  const filteredComplaints = complaints.filter(complaint =>
-    (complaint.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (complaint.building?.name?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-  );
-
-  const getBuildingName = (building) => {
-    if (!building) return 'N/A';
-    if (typeof building === 'object' && building.name) return building.name;
-    const buildingObj = buildings.find(b => b.id === building);
-    return buildingObj ? buildingObj.name : 'Unknown';
-  };
-
-
-  const openDetailModal = (complaint) => {
-    setSelectedComplaint(complaint);
-    
-
-    setShowDetailModal(true);
-  };
-
-  const closeDetailModal = () => {
-    setShowDetailModal(false);
-    setSelectedComplaint(null);
-    setUpdateData({ status: '', notes: '', image: null});
-  };
-
-  return (<>
-      <Header showSearch={false} />
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="mb-6">
-          <button className="text-blue-600 hover:text-blue-800 mb-4 flex items-center gap-1">
-            <Link to={`/dashboard/`}>
-                ← Back to Dashboard
-            </Link>
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Maintenance Requests</h1>
-            <p className="text-gray-600 mt-1">Monitor and manage maintenance requests</p>
-          </div>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your requests...</p>
         </div>
+      </div>
+    );
+  }
 
-        <div className="bg-white rounded-lg shadow-md">
-          <div className="p-4 border-b">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search complaints..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="bg-red-50 text-red-600 p-6 rounded-lg border border-red-200 max-w-md">
+          <p className="font-medium mb-2">Error</p>
+          <p>{error}</p>
+          <button 
+            onClick={fetchUserRequests}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (requests.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center bg-white p-12 rounded-lg shadow-md max-w-md">
+          <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Requests Found</h2>
+          <p className="text-gray-600 mb-6">You haven't submitted any maintenance requests yet.</p>
+          <a 
+            href="/submit-request"
+            className="inline-block px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Submit a Request
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  const currentStep = getStatusStep(selectedRequest?.status);
+
+  return (
+    <>
+      <div className="p-6 max-w-7xl min-h-screen flex flex-col mx-auto height: 100vh;">
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Track Your Requests</h1>
+            <p className="text-gray-600">Monitor the status of your maintenance requests</p>
           </div>
 
-          {loading ? (
-            <div className="p-8 text-center text-gray-500">Loading maintenance requests...</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredComplaints.length === 0 ? (
-                    <tr>
-                      <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
-                        No maintenance requests found.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredComplaints.map((complaint) => (
-                      <tr key={complaint.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          #{complaint.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          <div>
-                            <div className="font-medium">{getBuildingName(complaint.building)}</div>
-                            <div className="text-xs text-gray-500">
-                              Floor {complaint.floor?.number || complaint.floor || 'N/A'}, Room {complaint.room?.name || complaint.room || 'N/A'}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Request List Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-lg shadow-md p-4 max-h-[600px] overflow-y-auto">
+                <h2 className="text-lg font-semibold text-gray-800 mb-4">Your Requests</h2>
+                <div className="space-y-2">
+                  {requests.map((req) => (
+                    <button
+                      key={req.id}
+                      onClick={() => setSelectedRequest(req)}
+                      className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                        selectedRequest?.id === req.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-semibold text-gray-800">Request #{req.id}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          req.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          req.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {req.status.replace('_', ' ').toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 truncate mb-1">{req.description}</p>
+                      <p className="text-xs text-gray-500">{formatDate(req.created_at)}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:col-span-2">
+              {selectedRequest && (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  {/* Progress Tracker */}
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6">
+                    <h2 className="text-white text-2xl font-bold mb-6">Request #{selectedRequest.id}</h2>
+                    
+                    {/* Progress Steps */}
+                    <div className="relative">
+                      <div className="flex justify-between items-center">
+                        {/* Step 1: Pending */}
+                        <div className="flex flex-col items-center flex-1">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                            currentStep >= 0 ? 'bg-white text-blue-600' : 'bg-blue-400 text-white'
+                          }`}>
+                            <Clock className="w-6 h-6" />
+                          </div>
+                          <span className="text-white text-sm font-medium mt-2">Pending</span>
+                        </div>
+
+                        {/* Connecting Line 1 */}
+                        <div className={`flex-1 h-1 transition-all ${
+                          currentStep >= 1 ? 'bg-white' : 'bg-blue-400'
+                        }`}></div>
+
+                        {/* Step 2: In Progress */}
+                        <div className="flex flex-col items-center flex-1">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                            currentStep >= 1 ? 'bg-white text-blue-600' : 'bg-blue-400 text-white'
+                          }`}>
+                            <User className="w-6 h-6" />
+                          </div>
+                          <span className="text-white text-sm font-medium mt-2">In Progress</span>
+                        </div>
+
+                        {/* Connecting Line 2 */}
+                        <div className={`flex-1 h-1 transition-all ${
+                          currentStep >= 2 ? 'bg-white' : 'bg-blue-400'
+                        }`}></div>
+
+                        {/* Step 3: Completed */}
+                        <div className="flex flex-col items-center flex-1">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                            currentStep >= 2 ? 'bg-white text-green-600' : 'bg-blue-400 text-white'
+                          }`}>
+                            <CheckCircle className="w-6 h-6" />
+                          </div>
+                          <span className="text-white text-sm font-medium mt-2">Completed</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content Area */}
+                  <div className="p-6">
+                    {/* PENDING STAGE */}
+                    {selectedRequest.status === 'pending' && (
+                      <div className="space-y-6">
+                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                          <p className="text-yellow-800 font-medium">Your request is pending assignment</p>
+                          <p className="text-yellow-700 text-sm mt-1">A staff member will be assigned soon</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="flex items-start space-x-3">
+                            <Calendar className="w-5 h-5 text-gray-400 mt-1" />
+                            <div>
+                              <p className="text-sm text-gray-600">Submitted</p>
+                              <p className="font-medium text-gray-800">{formatDate(selectedRequest.created_at)}</p>
                             </div>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">
-                          <div className="max-w-xs truncate">
-                            {complaint.description ? complaint.description.substring(0, 50) + '...' : 'N/A'}
+
+                          <div className="flex items-start space-x-3">
+                            <MapPin className="w-5 h-5 text-gray-400 mt-1" />
+                            <div>
+                              <p className="text-sm text-gray-600">Location</p>
+                              <p className="font-medium text-gray-800">
+                                {selectedRequest.building?.name || 'N/A'}, Floor {selectedRequest.floor?.number || 'N/A'}, Room {selectedRequest.room?.name || 'N/A'}
+                              </p>
+                            </div>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(complaint.status)}`}>
-                            {formatStatusText(complaint.status)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          {new Date(complaint.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            onClick={() => openDetailModal(complaint)}
-                            className="text-blue-600 hover:text-blue-800 font-medium"
-                          >
-                            View Details
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                        </div>
 
-        {/* Detail Modal */}
-        {showDetailModal && selectedComplaint && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
-            onClick={closeDetailModal}
-          >
-            <div 
-              className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Request #{selectedComplaint.id}
-                  </h2>
-                  <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(selectedComplaint.status)}`}>
-                    {formatStatusText(selectedComplaint.status)}
-                  </span>
-                </div>
-                <button
-                  onClick={closeDetailModal}
-                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
-                >
-                  ×
-                </button>
-              </div>
+                        <div>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <FileText className="w-5 h-5 text-gray-400" />
+                            <h3 className="font-semibold text-gray-800">Description</h3>
+                          </div>
+                          <p className="text-gray-700 bg-gray-50 p-4 rounded">{selectedRequest.description}</p>
+                        </div>
 
-              {/* Body */}
-              <div className="p-6 space-y-6">
-                {/* Request Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Request Information</h3>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Requester</label>
-                      <p className="mt-1 text-gray-900">{selectedComplaint.requester_name || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Role</label>
-                      {selectedComplaint.role ? (
-                        <span className={`inline-block mt-1 px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeColor(selectedComplaint.role)}`}>
-                          {selectedComplaint.role}
-                        </span>
-                      ) : (
-                        <p className="mt-1 text-gray-900">N/A</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Building</label>
-                      <p className="mt-1 text-gray-900">{getBuildingName(selectedComplaint.building)}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Floor</label>
-                      <p className="mt-1 text-gray-900">{selectedComplaint.floor?.number || selectedComplaint.floor || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Room</label>
-                      <p className="mt-1 text-gray-900">{selectedComplaint.room?.name || selectedComplaint.room || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Date Submitted</label>
-                      <p className="mt-1 text-gray-900">{new Date(selectedComplaint.created_at).toLocaleString()}</p>
-                    </div>
+                        {selectedRequest.issue_photo && (
+                          <div>
+                            <div className="flex items-center space-x-2 mb-2">
+                              <ImageIcon className="w-5 h-5 text-gray-400" />
+                              <h3 className="font-semibold text-gray-800">Issue Photo</h3>
+                            </div>
+                            <img 
+                              src={getImageUrl(selectedRequest.issue_photo)}
+                              alt="Issue"
+                              className="w-full max-h-64 object-contain rounded border"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* IN PROGRESS STAGE */}
+                    {selectedRequest.status === 'in_progress' && (
+                      <div className="space-y-6">
+                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                          <p className="text-blue-800 font-medium">A staff member is working on your request</p>
+                          <p className="text-blue-700 text-sm mt-1">You will be notified once completed</p>
+                        </div>
+
+                        {/* Assigned Staff Info */}
+                        {selectedRequest.assigned_to_details && (
+                          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+                            <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+                              <User className="w-5 h-5 mr-2 text-blue-600" />
+                              Assigned Staff
+                            </h3>
+                            <div className="flex items-center space-x-4">
+                              <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-bold text-xl">
+                                {selectedRequest.assigned_to_details.first_name?.[0] || selectedRequest.assigned_to_details.username?.[0] || 'S'}
+                              </div>
+                              <div>
+                                <p className="font-semibold text-gray-800 text-lg">
+                                  {selectedRequest.assigned_to_details.first_name} {selectedRequest.assigned_to_details.last_name}
+                                </p>
+                                <p className="text-gray-600">@{selectedRequest.assigned_to_details.username}</p>
+                                <p className="text-sm text-gray-500 capitalize">{selectedRequest.assigned_to_details.role || 'Staff'}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="flex items-start space-x-3">
+                            <Calendar className="w-5 h-5 text-gray-400 mt-1" />
+                            <div>
+                              <p className="text-sm text-gray-600">Started</p>
+                              <p className="font-medium text-gray-800">{formatDate(selectedRequest.updated_at)}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start space-x-3">
+                            <MapPin className="w-5 h-5 text-gray-400 mt-1" />
+                            <div>
+                              <p className="text-sm text-gray-600">Location</p>
+                              <p className="font-medium text-gray-800">
+                                {selectedRequest.building?.name || 'N/A'}, Floor {selectedRequest.floor?.number || 'N/A'}, Room {selectedRequest.room?.name || 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <FileText className="w-5 h-5 text-gray-400" />
+                            <h3 className="font-semibold text-gray-800">Original Request</h3>
+                          </div>
+                          <p className="text-gray-700 bg-gray-50 p-4 rounded">{selectedRequest.description}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* COMPLETED STAGE */}
+                    {selectedRequest.status === 'completed' && (
+                      <div className="space-y-6">
+                        <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                          <div className="flex items-center">
+                            <CheckCircle className="w-6 h-6 text-green-600 mr-3" />
+                            <div>
+                              <p className="text-green-800 font-medium">Request Completed!</p>
+                              <p className="text-green-700 text-sm mt-1">Your maintenance request has been successfully resolved</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Assigned Staff Info */}
+                        {selectedRequest.assigned_to_details && (
+                          <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
+                            <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+                              <User className="w-5 h-5 mr-2 text-green-600" />
+                              Completed By
+                            </h3>
+                            <div className="flex items-center space-x-4">
+                              <div className="w-16 h-16 rounded-full bg-green-200 flex items-center justify-center text-green-600 font-bold text-xl">
+                                {selectedRequest.assigned_to_details.first_name?.[0] || selectedRequest.assigned_to_details.username?.[0] || 'S'}
+                              </div>
+                              <div>
+                                <p className="font-semibold text-gray-800 text-lg">
+                                  {selectedRequest.assigned_to_details.first_name} {selectedRequest.assigned_to_details.last_name}
+                                </p>
+                                <p className="text-gray-600">@{selectedRequest.assigned_to_details.username}</p>
+                                <p className="text-sm text-gray-500 capitalize">{selectedRequest.assigned_to_details.role || 'Staff'}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="flex items-start space-x-3">
+                            <Calendar className="w-5 h-5 text-gray-400 mt-1" />
+                            <div>
+                              <p className="text-sm text-gray-600">Completed On</p>
+                              <p className="font-medium text-gray-800">{formatDate(selectedRequest.updated_at)}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start space-x-3">
+                            <MapPin className="w-5 h-5 text-gray-400 mt-1" />
+                            <div>
+                              <p className="text-sm text-gray-600">Location</p>
+                              <p className="font-medium text-gray-800">
+                                {selectedRequest.building?.name || 'N/A'}, Floor {selectedRequest.floor?.number || 'N/A'}, Room {selectedRequest.room?.name || 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {selectedRequest.completion_notes && (
+                          <div>
+                            <div className="flex items-center space-x-2 mb-2">
+                              <FileText className="w-5 h-5 text-gray-400" />
+                              <h3 className="font-semibold text-gray-800">Completion Notes</h3>
+                            </div>
+                            <p className="text-gray-700 bg-green-50 p-4 rounded border border-green-200">{selectedRequest.completion_notes}</p>
+                          </div>
+                        )}
+
+                        {selectedRequest.completion_photo && (
+                          <div>
+                            <div className="flex items-center space-x-2 mb-2">
+                              <ImageIcon className="w-5 h-5 text-gray-400" />
+                              <h3 className="font-semibold text-gray-800">Completion Photo</h3>
+                            </div>
+                            <img 
+                              src={getImageUrl(selectedRequest.completion_photo)}
+                              alt="Completed work"
+                              className="w-full max-h-64 object-contain rounded border"
+                            />
+                          </div>
+                        )}
+
+                        {/* Optional: Feedback Section */}
+                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mt-6">
+                          <h3 className="font-semibold text-gray-800 mb-3">How was the service?</h3>
+                          <p className="text-sm text-gray-600 mb-4">Your feedback helps us improve our maintenance services</p>
+                          <div className="flex gap-2">
+                            <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm">
+                              Rate Service
+                            </button>
+                            <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors text-sm">
+                              Leave Feedback
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-
-                  {selectedComplaint.section && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Section</label>
-                      <p className="mt-1 text-gray-900">{selectedComplaint.section}</p>
-                    </div>
-                  )}
-
-                  {selectedComplaint.student_id && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Student ID</label>
-                      <p className="mt-1 text-gray-900">{selectedComplaint.student_id}</p>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Description</label>
-                    <p className="mt-1 text-gray-900 bg-gray-50 p-3 rounded">{selectedComplaint.description || 'N/A'}</p>
-                  </div>
-
-                  {selectedComplaint.issue_photo && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Issue Photo</label>
-                      <img 
-                        src={getImageUrl(selectedComplaint.issue_photo)}
-                        alt="Issue" 
-                        className="w-full max-h-64 object-contain rounded border"
-                        onError={(e) => {
-                          console.error('Image failed to load:', getImageUrl(selectedComplaint.issue_photo));
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
                 </div>
-              </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </div>
+      <Footer/>
     </>
   );
-};
+}
 
 export default TrackRequest;

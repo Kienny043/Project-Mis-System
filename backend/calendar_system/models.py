@@ -1,39 +1,22 @@
 from django.db import models
-from django.conf import settings
+from maintenance.models import MaintenanceRequest
 
 
-class Event(models.Model):
-    EVENT_TYPES = [
-        ("school", "School Event"),
-        ("maintenance", "Maintenance Schedule"),
-        ("request", "Request Schedule"),
-        ("personal", "Personal Event"),
-    ]
-
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    event_type = models.CharField(max_length=50, choices=EVENT_TYPES)
-
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="created_events",
+class MaintenanceSchedule(models.Model):
+    request = models.OneToOneField(
+        MaintenanceRequest, on_delete=models.CASCADE, related_name="schedule"
     )
-
-    assigned_to = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+    schedule_date = models.DateField()
+    estimated_duration = models.CharField(max_length=100, blank=True, null=True)
+    assigned_staff = models.ForeignKey(
+        "accounts.StaffProfile",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="assigned_events",
+        related_name="scheduled_tasks",
     )
-
-    is_global = models.BooleanField(default=False)  # shows for everyone?
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} ({self.event_type})"
+        return f"Schedule for Request #{self.request.id} on {self.schedule_date}"

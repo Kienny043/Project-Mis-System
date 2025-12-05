@@ -5,6 +5,7 @@ import TrackRequest from "../pages/TrackRequest";
 import StaffDashboard from "../pages/StaffDashboard";
 import AdminPanel from "../pages/AdminPanel";
 import MaintenanceRequestForms from "../components/MaintenanceRequestForm.jsx";
+import AccountSettingsDashboard from "../components/Account.jsx";
 
 
 export default function AppRouter() {
@@ -21,6 +22,7 @@ export default function AppRouter() {
             <Route path="/track" element={<TrackRequest />} />
             <Route path="/staff" element={<StaffDashboard />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/account" element={<Account />} />
           </Routes>
         </div>
       </div>

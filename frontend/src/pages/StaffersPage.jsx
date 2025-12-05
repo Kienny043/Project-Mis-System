@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, Edit2, Trash2, X } from 'lucide-react';
 import api from '../api/axios'
 import { Link } from 'react-router-dom';
+import Footer from '../components/Footer.jsx'
 
 const StaffersPage = ({ onNavigate }) => {
   const [staffers, setStaffers] = useState([]);
@@ -401,6 +402,7 @@ const StaffersPage = ({ onNavigate }) => {
           </div>
         </div>
       )}
+      <Footer/>
     </div>
   );
 };
