@@ -2,298 +2,604 @@
   {
     "model": "buildings.building",
     "pk": 1,
-    "fields": { "name": "DFA", "has_floors": true, "total_floors": 2 }
+    "fields": {
+      "name": "DFA",
+      "has_floors": true,
+      "total_floors": 2
+    }
   },
-  {
-    "model": "buildings.building",
-    "pk": 2,
-    "fields": { "name": "ANNEX", "has_floors": true, "total_floors": 4 }
-  },
-  {
-    "model": "buildings.building",
-    "pk": 3,
-    "fields": { "name": "NB", "has_floors": true, "total_floors": 3 }
-  },
-
   {
     "model": "buildings.floor",
     "pk": 1,
-    "fields": { "building": 1, "number": 2, "label": "2nd Floor" }
+    "fields": {
+      "building": 1,
+      "number": 1,
+      "label": "1st"
+    }
   },
   {
     "model": "buildings.floor",
     "pk": 2,
-    "fields": { "building": 2, "number": 1, "label": "1st Floor" }
+    "fields": {
+      "building": 1,
+      "number": 2,
+      "label": "2nd"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 1,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A1"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 2,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A2"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 3,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A3"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 4,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A4"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 5,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A5"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 6,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A6"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 7,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A7"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 8,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A8"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 9,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A9"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 10,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A10"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 11,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A11"
+    }
+  },
+  {
+    "model": "buildings.room",
+    "pk": 12,
+    "fields": {
+      "building": 1,
+      "floor": 1,
+      "name": "A12"
+    }
+  },
+  {
+    "model": "buildings.building",
+    "pk": 2,
+    "fields": {
+      "name": "ANNEX",
+      "has_floors": true,
+      "total_floors": 4
+    }
+  },
+  {
+    "model": "buildings.floor",
+    "pk": 2,
+    "fields": {
+      "building": 2,
+      "number": 1,
+      "label": "1st"
+    }
   },
   {
     "model": "buildings.floor",
     "pk": 3,
-    "fields": { "building": 2, "number": 2, "label": "2nd Floor" }
+    "fields": {
+      "building": 2,
+      "number": 2,
+      "label": "2nd"
+    }
   },
   {
     "model": "buildings.floor",
     "pk": 4,
-    "fields": { "building": 2, "number": 3, "label": "3rd Floor" }
+    "fields": {
+      "building": 2,
+      "number": 3,
+      "label": "3rd"
+    }
   },
   {
     "model": "buildings.floor",
     "pk": 5,
-    "fields": { "building": 2, "number": 4, "label": "4th Floor" }
-  },
-  {
-    "model": "buildings.floor",
-    "pk": 6,
-    "fields": { "building": 3, "number": 1, "label": "1st Floor" }
-  },
-  {
-    "model": "buildings.floor",
-    "pk": 7,
-    "fields": { "building": 3, "number": 2, "label": "2nd Floor" }
-  },
-  {
-    "model": "buildings.floor",
-    "pk": 8,
-    "fields": { "building": 3, "number": 3, "label": "3rd Floor" }
-  },
-  {
-  "model": "buildings.floor",
-  "pk": 9,
-  "fields": { "building": 2, "number": 1, "label": "1st Floor" }
-  },
-  {
-    "model": "buildings.floor",
-    "pk": 10,
-    "fields": { "building": 2, "number": 2, "label": "2nd Floor" }
-  },
-  {
-    "model": "buildings.floor",
-    "pk": 11,
-    "fields": { "building": 2, "number": 3, "label": "3rd Floor" }
-  },
-  {
-    "model": "buildings.floor",
-    "pk": 12,
-    "fields": { "building": 2, "number": 4, "label": "4th Floor" }
+    "fields": {
+      "building": 2,
+      "number": 4,
+      "label": "4th"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 13,
-    "fields": { "building": 2, "floor": 2, "name": "101/HR" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "101/HR"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 14,
-    "fields": { "building": 2, "floor": 2, "name": "102/Program Head of BSSW" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "102/Program Head of BSSW"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 15,
-    "fields": { "building": 2, "floor": 2, "name": "103" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "103"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 16,
-    "fields": { "building": 2, "floor": 2, "name": "104" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "104"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 17,
-    "fields": { "building": 2, "floor": 2, "name": "105" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "105"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 18,
-    "fields": { "building": 2, "floor": 2, "name": "Faculty Room" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "Faculty Room"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 19,
-    "fields": { "building": 2, "floor": 2, "name": "Publication Office" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "Publication Office"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 20,
-    "fields": { "building": 2, "floor": 2, "name": "Guidance Services" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "Guidance Services"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 21,
-    "fields": { "building": 2, "floor": 2, "name": "Medical Services" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "Medical Services"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 22,
-    "fields": { "building": 2, "floor": 2, "name": "Safety Management" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "Safety Management"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 23,
-    "fields": { "building": 2, "floor": 2, "name": "Alumni Office" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "Alumni Office"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 24,
-    "fields": { "building": 2, "floor": 2, "name": "Registrar Office" }
+    "fields": {
+      "building": 2,
+      "floor": 2,
+      "name": "Registrar Office"
+    }
   },
-
   {
     "model": "buildings.room",
     "pk": 25,
-    "fields": { "building": 2, "floor": 3, "name": "201" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "201"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 26,
-    "fields": { "building": 2, "floor": 3, "name": "202" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "202"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 27,
-    "fields": { "building": 2, "floor": 3, "name": "203" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "203"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 28,
-    "fields": { "building": 2, "floor": 3, "name": "204" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "204"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 29,
-    "fields": { "building": 2, "floor": 3, "name": "205" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "205"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 30,
-    "fields": { "building": 2, "floor": 3, "name": "AVR" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "AVR"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 31,
-    "fields": { "building": 2, "floor": 3, "name": "212" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "212"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 32,
-    "fields": { "building": 2, "floor": 3, "name": "211" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "211"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 33,
-    "fields": { "building": 2, "floor": 3, "name": "210" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "210"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 34,
-    "fields": { "building": 2, "floor": 3, "name": "DLL CRDS" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "DLL CRDS"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 35,
-    "fields": { "building": 2, "floor": 3, "name": "209" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "209"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 36,
-    "fields": { "building": 2, "floor": 3, "name": "206" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "206"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 37,
-    "fields": { "building": 2, "floor": 3, "name": "Program Head Accountancy" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "Program Head Accountancy"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 38,
-    "fields": { "building": 2, "floor": 3, "name": "207" }
+    "fields": {
+      "building": 2,
+      "floor": 3,
+      "name": "207"
+    }
   },
-
   {
     "model": "buildings.room",
     "pk": 39,
-    "fields": { "building": 2, "floor": 4, "name": "CL1" }
+    "fields": {
+      "building": 2,
+      "floor": 4,
+      "name": "CL1"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 40,
-    "fields": { "building": 2, "floor": 4, "name": "CL2" }
+    "fields": {
+      "building": 2,
+      "floor": 4,
+      "name": "CL2"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 41,
-    "fields": { "building": 2, "floor": 4, "name": "CL3" }
+    "fields": {
+      "building": 2,
+      "floor": 4,
+      "name": "CL3"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 42,
-    "fields": { "building": 2, "floor": 4, "name": "CL4" }
+    "fields": {
+      "building": 2,
+      "floor": 4,
+      "name": "CL4"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 43,
-    "fields": { "building": 2, "floor": 4, "name": "CL5" }
+    "fields": {
+      "building": 2,
+      "floor": 4,
+      "name": "CL5"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 44,
-    "fields": { "building": 2, "floor": 4, "name": "SL" }
+    "fields": {
+      "building": 2,
+      "floor": 4,
+      "name": "SL"
+    }
   },
-
   {
     "model": "buildings.room",
     "pk": 45,
-    "fields": { "building": 2, "floor": 5, "name": "401" }
+    "fields": {
+      "building": 2,
+      "floor": 5,
+      "name": "401"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 46,
-    "fields": { "building": 2, "floor": 5, "name": "402" }
+    "fields": {
+      "building": 2,
+      "floor": 5,
+      "name": "402"
+    }
   },
-
+  {
+    "model": "buildings.building",
+    "pk": 3,
+    "fields": {
+      "name": "NB",
+      "has_floors": true,
+      "total_floors": 3
+    }
+  },
+  {
+    "model": "buildings.floor",
+    "pk": 6,
+    "fields": {
+      "building": 3,
+      "number": 1,
+      "label": "1st"
+    }
+  },
+  {
+    "model": "buildings.floor",
+    "pk": 7,
+    "fields": {
+      "building": 3,
+      "number": 2,
+      "label": "2nd"
+    }
+  },
+  {
+    "model": "buildings.floor",
+    "pk": 8,
+    "fields": {
+      "building": 3,
+      "number": 3,
+      "label": "3rd"
+    }
+  },
   {
     "model": "buildings.room",
     "pk": 47,
-    "fields": { "building": 3, "floor": 6, "name": "NB1" }
+    "fields": {
+      "building": 3,
+      "floor": 6,
+      "name": "NB1"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 48,
-    "fields": { "building": 3, "floor": 6, "name": "NB2" }
+    "fields": {
+      "building": 3,
+      "floor": 6,
+      "name": "NB2"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 49,
-    "fields": { "building": 3, "floor": 6, "name": "NB3" }
+    "fields": {
+      "building": 3,
+      "floor": 6,
+      "name": "NB3"
+    }
   },
-
   {
     "model": "buildings.room",
     "pk": 50,
-    "fields": { "building": 3, "floor": 7, "name": "NB4" }
+    "fields": {
+      "building": 3,
+      "floor": 7,
+      "name": "NB4"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 51,
-    "fields": { "building": 3, "floor": 7, "name": "NB5" }
+    "fields": {
+      "building": 3,
+      "floor": 7,
+      "name": "NB5"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 52,
-    "fields": { "building": 3, "floor": 7, "name": "NB6" }
+    "fields": {
+      "building": 3,
+      "floor": 7,
+      "name": "NB6"
+    }
   },
-
   {
     "model": "buildings.room",
     "pk": 53,
-    "fields": { "building": 3, "floor": 8, "name": "NB7" }
+    "fields": {
+      "building": 3,
+      "floor": 8,
+      "name": "NB7"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 54,
-    "fields": { "building": 3, "floor": 8, "name": "NB8" }
+    "fields": {
+      "building": 3,
+      "floor": 8,
+      "name": "NB8"
+    }
   },
   {
     "model": "buildings.room",
     "pk": 55,
-    "fields": { "building": 3, "floor": 8, "name": "NB9" }
+    "fields": {
+      "building": 3,
+      "floor": 8,
+      "name": "NB9"
+    }
   }
 ]

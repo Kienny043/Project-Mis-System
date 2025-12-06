@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "buildings",
     "api",
-    
+
     "maintenance",
     "request_system",
     'calendar_system',

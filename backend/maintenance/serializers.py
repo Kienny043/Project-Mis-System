@@ -4,11 +4,15 @@ from accounts.serializers import StaffProfileSerializer, UserSerializer
 from accounts.models import User
 
 
+# maintenance/serializers.py
 class MaintenanceRequestSerializer(serializers.ModelSerializer):
-    # ✅ Show full user details when reading
     assigned_to_details = UserSerializer(source='assigned_to', read_only=True)
-    # ✅ Allow writing the user ID
     assigned_to = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    created_by = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         required=False,
         allow_null=True
@@ -22,11 +26,11 @@ class MaintenanceRequestSerializer(serializers.ModelSerializer):
             'id', 'requester_name', 'role', 'section', 'student_id',
             'description', 'issue_photo', 'building', 'floor', 'room',
             'status', 'created_at', 'updated_at',
-            'assigned_to', 'assigned_to_details',  # ✅ Both fields
+            'assigned_to', 'assigned_to_details',
+            'created_by',  # Add this
             'completion_notes', 'completion_photo'
         ]
         read_only_fields = ["created_at", "updated_at"]
-
 
 class ClaimRequestSerializer(serializers.ModelSerializer):
     class Meta:

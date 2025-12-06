@@ -10,6 +10,9 @@ class Building(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        ordering = ['name']
 
 
 class Floor(models.Model):
@@ -21,6 +24,9 @@ class Floor(models.Model):
 
     def __str__(self):
         return f"{self.building.name} – {self.label}"
+    
+    class Meta:
+        ordering = ['number']
 
 
 class Room(models.Model):
@@ -34,3 +40,11 @@ class Room(models.Model):
 
     def __str__(self):
         return f"{self.building.name} – {self.name}"
+    
+    class Meta:
+        ordering = ['name']
+
+def save(self, *args, **kwargs):
+    if self.floor and self.floor.building != self.building:
+        raise ValueError("Room's building must match the floor's building")
+    super().save(*args, **kwargs)

@@ -1,10 +1,9 @@
 import axios from 'axios';
 
-// ✅ Make sure this includes /api at the end
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,  // ✅ Add /api here
+  baseURL: `${API_BASE_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -62,10 +61,9 @@ export const authAPI = {
 
 // Maintenance API
 export const maintenanceAPI = {
-  // Get all maintenance requests
   getAll: () => api.get('/maintenance/requests/'),
-  
-  // Create new maintenance request (no auth required)
+  getById: (id) => api.get(`/maintenance/requests/${id}/`),
+
   create: (data) => {
     const formData = new FormData();
     Object.keys(data).forEach(key => {
@@ -73,19 +71,15 @@ export const maintenanceAPI = {
         formData.append(key, data[key]);
       }
     });
-    // ✅ Use api instance instead of raw axios
     return api.post('/maintenance/requests/create/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
-  
-  // Claim a request (staff only)
+
   claim: (id) => api.post(`/maintenance/requests/${id}/claim/`),
-  
-  // Complete a request (staff only)
-  complete: (id, data) => {
+
+
+complete: (id, data) => {
     const formData = new FormData();
     Object.keys(data).forEach(key => {
       if (data[key] !== null && data[key] !== undefined) {
@@ -93,12 +87,14 @@ export const maintenanceAPI = {
       }
     });
     return api.post(`/maintenance/requests/${id}/complete/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+
+  updateStatus: (id, data) =>
+    api.post(`/maintenance/requests/${id}/update-status/`, data),
 };
+
 
 // Request System API
 export const requestAPI = {
@@ -108,5 +104,39 @@ export const requestAPI = {
   update: (id, data) => api.put(`/maintenance/requests/${id}/`, data),
   delete: (id) => api.delete(`/maintenance/requests/${id}/`),
 };
+
+// Notification API
+export const notificationAPI = {
+  // Get all notifications for current user
+  getAll: () => api.get('/notifications/my/'),
+  
+  // Mark single notification as read
+  markAsRead: (id) => api.post(`/notifications/${id}/mark-read/`),
+  
+  // Mark all notifications as read
+  markAllAsRead: () => api.post('/notifications/mark-all-read/'),
+  
+  // Delete notification
+  delete: (id) => api.delete(`/notifications/${id}/`),
+};
+
+// Calendar/Schedule API
+export const calendarAPI = {
+  // Get schedules for a specific month
+  getMonthSchedules: (year, month) => 
+    api.get('/calendar/calendar/month/', {
+      params: { year, month }
+    }),
+  
+  // Set/Update schedule for a maintenance request
+  setSchedule: (requestId, data) => 
+    api.post(`/calendar/schedule/${requestId}/`, data),
+  
+  // Get schedule for specific request
+  getRequestSchedule: (requestId) => 
+    api.get(`/calendar/schedule/${requestId}/`),
+};
+
+
 
 export default api;

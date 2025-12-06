@@ -7,7 +7,7 @@ import Register from './components/Register.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import MaintenanceList from './components/MaintenanceList.jsx';
 import MaintenanceRequestForm from './components/MaintenanceRequestForm.jsx';
-import Calendar from './components/Calendar.jsx';
+import MaintenanceCalendar from './components/Calendar.jsx';
 import ManagementOverview from './components/MaintenanceOverviewPage.jsx';
 import ComplaintsPage from './pages/ComplaintsPage.jsx';
 import BuildingsPage from './pages/BuildingsPage.jsx';
@@ -18,6 +18,10 @@ import UserDashboard from './components/UserDashboard.jsx'
 import UserAccountSettingsDashboard from './components/UserProfile.jsx'
 import UserHome from './pages/UserHome.jsx'
 import AnalyticsPage from './pages/AnalyticsPage.jsx';
+import NotificationBell from './components/NotifactionBell.jsx';
+import NotificationsPage from './pages/NotificationsPage.jsx';
+import Logo from './images/Logo.png';
+import IntegratedCalendar from './components/IntegratedCalendar.jsx'
 
 function PrivateRoute({ children, allowedRoles }) {
   const { isAuthenticated, user } = useAuth();
@@ -107,12 +111,11 @@ function Sidebar() {
       <div>
         <div className="flex flex-col items-center mb-8">
           <div className="w-32 h-32 rounded-full bg-white p-4 mb-4 shadow-lg">
-            <svg className="w-full h-full" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="45" fill="#3b82f6"/>
-              <text x="50" y="35" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold">DLL</text>
-              <text x="50" y="55" textAnchor="middle" fill="white" fontSize="12">MAINT</text>
-              <text x="50" y="70" textAnchor="middle" fill="white" fontSize="12">TRACKER</text>
-            </svg>
+            <img
+              className="w-full h-full object-contain"
+              src={Logo}
+              alt="Maintenance Tracker Logo"
+            />
           </div>
           <h3 className="text-lg font-medium">Hi, {user?.username || 'User'}</h3>
           <p className="text-sm text-gray-300 capitalize">{user?.role || 'Staff'}</p>
@@ -229,6 +232,14 @@ function AppContent() {
             }
           />
           <Route
+            path="/notifications"
+            element={
+              <PrivateRoute>
+                <NotificationsPage/>
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/user-dashboard"
             element={
               <PrivateRoute allowedRoles={['user']}>
@@ -314,7 +325,15 @@ function AppContent() {
             path="/calendar"
             element={
               <PrivateRoute>
-                <Calendar />
+                <MaintenanceCalendar />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/calendar-admin"
+            element={
+              <PrivateRoute allowedRoles={['staff', 'maintenance staff', 'admin', 'administrator']}>
+                <IntegratedCalendar />
               </PrivateRoute>
             }
           />

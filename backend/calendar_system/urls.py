@@ -1,7 +1,8 @@
-from rest_framework import routers
-from .views import EventViewSet
+from django.urls import path
+from .views import SetScheduleView, CalendarMonthView
 
-router = routers.DefaultRouter()
-router.register(r"", EventViewSet, basename="events")
 
-urlpatterns = router.urls
+urlpatterns = [
+    path("schedule/<int:pk>/", SetScheduleView.as_view(), name="set_schedule"),
+    path("calendar/month/", CalendarMonthView.as_view(), name="calendar_month"),
+]

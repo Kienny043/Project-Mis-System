@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
 function Header({ showSearch = false }) {
@@ -48,8 +48,8 @@ function Header({ showSearch = false }) {
         <div className="absolute inset-0 bg-black/60"></div>
         {showSearch && (
           <div className="relative h-full bg-gradient-to-b from-gray-900/85 to-gray-900/95 flex items-center justify-center px-6">
-            <div className="w-full max-w-7xl mx-auto flex items-center gap-4">
-              {/* Search Bar - Made wider */}
+            <div className="w-full max-w-7xl mx-auto flex items-center justify-end gap-4">
+              {/* Search Bar - Made wider
               <div className="flex-1 relative">
                 <input
                   type="text"
@@ -59,15 +59,16 @@ function Header({ showSearch = false }) {
                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400">
                   🔍
                 </span>
-              </div>
+              </div> */}
 
               {/* Notification Icon */}
-              <button className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-colors flex items-center justify-center relative">
-                <span className="text-xl">🔔</span>
-                <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  3
-                </span>
-              </button>
+              <div className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-colors flex items-center justify-center relative">
+                <Link
+                  to="/notifications"
+                >
+                  <span className="text-xl">🔔</span>
+                </Link>
+              </div>
 
               {/* Profile Icon with Dropdown */}
               <div className="relative">

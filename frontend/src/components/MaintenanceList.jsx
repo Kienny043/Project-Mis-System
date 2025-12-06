@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import Footer from './Footer.jsx'
+import Header from './Header.jsx';
 import { ClipboardList, CheckCircle2, Clock, XCircle } from 'lucide-react';
 
 function MaintenanceList() {
@@ -319,6 +320,7 @@ function MaintenanceList() {
   
   return (
     <>
+    <Header/>
       <div className="p-6 max-w-7xl min-h-screen flex flex-col mx-auto height: 100vh;">
         {/* Header */}
         <div className="mb-8">

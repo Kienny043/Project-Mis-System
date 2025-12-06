@@ -7,7 +7,7 @@ import Footer from './Footer.jsx'
 function UserDashboard() {
   const [stats, setStats] = useState({
     totalRequests: 0,
-    pendingCount: 0,
+    pendingCount: 0,  
     inProgressCount: 0,
     completedCount: 0,
     recentRequests: [],
@@ -33,8 +33,12 @@ function UserDashboard() {
         ? response.data 
         : response.data.results || [];
       
+      const requesterName = userData.first_name && userData.last_name
+        ? `${userData.first_name} ${userData.last_name}`.toLowerCase().trim()
+        : userData.username?.toLowerCase() || '';
+
       const userRequests = allRequests.filter(
-        req => req.requester_name?.toLowerCase() === userData.username?.toLowerCase()
+        req => req.requester_name?.toLowerCase() === requesterName
       );
 
       const pendingCount = userRequests.filter(r => r.status === 'pending').length;
@@ -407,7 +411,7 @@ function UserDashboard() {
                   className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors font-medium"
                 >
                   Cancel
-                </button>
+                </button> 
               </div>
             </div>
           </div>

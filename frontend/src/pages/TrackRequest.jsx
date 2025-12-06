@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CheckCircle, Clock, Package, User, Calendar, MapPin, FileText, ImageIcon } from 'lucide-react';
 import api from '../api/axios';
 import Footer from '../components/Footer.jsx'
+import Header from '../components/Header.jsx';
 
 function TrackRequest() {
   const [requests, setRequests] = useState([]);
@@ -30,14 +31,14 @@ function TrackRequest() {
         : response.data.results || [];
 
       const requesterName = userData.first_name && userData.last_name
-        ? `${userData.first_name} ${userData.last_name}`.trim()
+        ? `${userData.first_name} ${userData.last_name}`.toLowerCase().trim()
         : userData.username?.toLowerCase() || '';
           
       // Filter requests by requester_name matching current user
       const userRequests = requestsData.filter(
         req => req.requester_name?.toLowerCase() === requesterName
       );
-      
+
       setRequests(userRequests);
       if (userRequests.length > 0) {
         setSelectedRequest(userRequests[0]);
@@ -128,6 +129,7 @@ function TrackRequest() {
 
   return (
     <>
+    <Header/>
       <div className="p-6 max-w-7xl min-h-screen flex flex-col mx-auto height: 100vh;">
         <div className="max-w-5xl mx-auto">
           {/* Header */}

@@ -1,52 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { requestAPI } from '../services/api';
+import { maintenanceAPI } from '../services/api';
+import { Calendar, Clock, MapPin, User } from 'lucide-react';
 
-function Calendar() {
+function MaintenanceCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [markedDates, setMarkedDates] = useState({
-    pending: [],
-    in_progress: [],
-    completed: [],
-  });
-  const [requests, setRequests] = useState([]);
+  const [maintenanceRequests, setMaintenanceRequests] = useState([]);
   const [selectedDateRequests, setSelectedDateRequests] = useState([]);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchRequestsForCalendar();
+    fetchMaintenanceRequests();
   }, [currentDate]);
 
-  const fetchRequestsForCalendar = async () => {
+  const fetchMaintenanceRequests = async () => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      const response = await requestAPI.getAll();
-      const allRequests = response.data;
-      setRequests(allRequests);
-
-      // Group dates by status
-      const pending = new Set();
-      const inProgress = new Set();
-      const completed = new Set();
-
-      allRequests.forEach(req => {
-        const date = new Date(req.created_at);
-        const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-
-        if (req.status === 'pending') {
-          pending.add(dateKey);
-        } else if (req.status === 'in_progress' || req.status === 'approved') {
-          inProgress.add(dateKey);
-        } else if (req.status === 'completed') {
-          completed.add(dateKey);
-        }
-      });
-
-      setMarkedDates({
-        pending: Array.from(pending),
-        in_progress: Array.from(inProgress),
-        completed: Array.from(completed),
-      });
+      const response = await maintenanceAPI.getAll();
+      
+      // Handle both array and object responses
+      const requestsData = Array.isArray(response.data) 
+        ? response.data 
+        : response.data.results || [];
+      
+      setMaintenanceRequests(requestsData);
     } catch (error) {
-      console.error('Error fetching requests:', error);
+      console.error('Error fetching maintenance requests:', error);
+      setError('Failed to load maintenance requests. Please try again.');
+      setMaintenanceRequests([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,35 +46,40 @@ function Calendar() {
     return { firstDay: adjustedFirstDay, daysInMonth };
   };
 
-  const getDateMarkerColor = (day) => {
+  const getRequestsForDate = (day) => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    const dateKey = `${year}-${month}-${day}`;
+    const targetDate = new Date(year, month, day);
+    const dateString = targetDate.toISOString().split('T')[0];
+    
+    // Filter maintenance requests by created_at date
+    return maintenanceRequests.filter(request => {
+      const requestDate = new Date(request.created_at).toISOString().split('T')[0];
+      return requestDate === dateString;
+    });
+  };
 
-    // Priority: completed > in_progress > pending
-    if (markedDates.completed.includes(dateKey)) {
-      return 'bg-green-500';
-    } else if (markedDates.in_progress.includes(dateKey)) {
-      return 'bg-red-500';
-    } else if (markedDates.pending.includes(dateKey)) {
-      return 'bg-yellow-500';
-    }
-    return null;
+  const getDateMarkerColor = (day) => {
+    const dayRequests = getRequestsForDate(day);
+    
+    if (dayRequests.length === 0) return null;
+    
+    const hasCompleted = dayRequests.some(r => r.status === 'completed');
+    const hasInProgress = dayRequests.some(r => r.status === 'in_progress');
+    const hasPending = dayRequests.some(r => r.status === 'pending');
+    
+    if (hasCompleted) return 'bg-green-500';
+    if (hasInProgress) return 'bg-blue-500';
+    if (hasPending) return 'bg-yellow-500';
+    
+    return 'bg-purple-500';
   };
 
   const handleDateClick = (day) => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
+    const dayRequests = getRequestsForDate(day);
     
-    const requestsOnDate = requests.filter(req => {
-      const reqDate = new Date(req.created_at);
-      return reqDate.getFullYear() === year &&
-             reqDate.getMonth() === month &&
-             reqDate.getDate() === day;
-    });
-
-    if (requestsOnDate.length > 0) {
-      setSelectedDateRequests(requestsOnDate);
+    if (dayRequests.length > 0) {
+      setSelectedDateRequests(dayRequests);
       setShowDetailsModal(true);
     }
   };
@@ -102,30 +93,38 @@ function Calendar() {
     const isCurrentMonth = currentDate.getMonth() === currentMonth && 
                           currentDate.getFullYear() === currentYear;
 
-    // Empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="text-center py-2"></div>);
     }
 
-    // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const isToday = isCurrentMonth && day === today;
       const markerColor = getDateMarkerColor(day);
+      const requestsCount = getRequestsForDate(day).length;
 
       days.push(
         <div
           key={day}
           onClick={() => handleDateClick(day)}
-          className={`text-center py-2 rounded relative cursor-pointer transition-colors ${
-            isToday ? 'bg-blue-500 text-white font-bold' :
-            markerColor ? 'hover:bg-gray-100' :
-            'text-gray-700 hover:bg-gray-100'
-          }`}
+          className={`text-center py-3 rounded relative cursor-pointer transition-all ${
+            isToday 
+              ? 'bg-indigo-600 text-white font-bold shadow-lg' 
+              : markerColor 
+              ? 'hover:bg-gray-100 hover:shadow-md' 
+              : 'text-gray-700 hover:bg-gray-50'
+          } ${requestsCount > 0 ? 'cursor-pointer' : 'cursor-default'}`}
         >
-          {day}
-          {markerColor && (
-            <div className={`absolute top-1 right-1 w-2 h-2 ${markerColor} rounded-full`}></div>
-          )}
+          <div className="relative">
+            {day}
+            {markerColor && !isToday && (
+              <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 ${markerColor} rounded-full animate-pulse`}></div>
+            )}
+            {requestsCount > 0 && (
+              <div className={`text-xs mt-1 ${isToday ? 'text-indigo-100' : 'text-gray-500'}`}>
+                {requestsCount}
+              </div>
+            )}
+          </div>
         </div>
       );
     }
@@ -141,26 +140,38 @@ function Calendar() {
 
   const getStatusBadge = (status) => {
     const badges = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-blue-100 text-blue-800',
-      in_progress: 'bg-red-100 text-red-800',
-      completed: 'bg-green-100 text-green-800',
-      rejected: 'bg-gray-100 text-gray-800',
+      pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      in_progress: 'bg-blue-100 text-blue-800 border-blue-200',
+      completed: 'bg-green-100 text-green-800 border-green-200',
     };
-    return badges[status] || 'bg-gray-100 text-gray-800';
+    return badges[status] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Request Calendar</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <Calendar className="w-8 h-8 text-indigo-600" />
+            <h1 className="text-3xl font-bold text-gray-800">Maintenance Calendar</h1>
+          </div>
+          <p className="text-gray-600">View maintenance requests by date</p>
+        </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          {/* Calendar Header */}
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+            {error}
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          {/* Calendar Navigation */}
           <div className="flex justify-between items-center mb-6">
             <button
               onClick={() => changeMonth(-1)}
-              className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors font-bold text-xl"
+              className="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 flex items-center justify-center transition-all font-bold text-xl text-indigo-700"
             >
               ‹
             </button>
@@ -169,86 +180,185 @@ function Calendar() {
             </h2>
             <button
               onClick={() => changeMonth(1)}
-              className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors font-bold text-xl"
+              className="w-10 h-10 rounded-full bg-indigo-100 hover:bg-indigo-200 flex items-center justify-center transition-all font-bold text-xl text-indigo-700"
             >
               ›
             </button>
           </div>
 
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-2 mb-4">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
-              <div key={i} className="text-center font-bold text-gray-600 text-sm py-2">
-                {day}
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-2">
-            {renderCalendar()}
-          </div>
-
-          {/* Legend */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h3 className="font-semibold text-gray-700 mb-3">Status Legend</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm text-gray-600">Pending</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-                <span className="text-sm text-gray-600">In Progress</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-600">Completed</span>
-              </div>
+          {loading && (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading maintenance requests...</p>
             </div>
-          </div>
+          )}
+
+          {!loading && (
+            <>
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-2 mb-4">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
+                  <div key={i} className="text-center font-bold text-gray-600 text-sm py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-2">
+                {renderCalendar()}
+              </div>
+
+              {/* Summary Stats */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h3 className="font-semibold text-gray-700 mb-4">Monthly Overview</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-gray-50 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-indigo-600">
+                      {maintenanceRequests.length}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">Total Requests</div>
+                  </div>
+                  <div className="bg-yellow-50 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {maintenanceRequests.filter(r => r.status === 'pending').length}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">Pending</div>
+                  </div>
+                  <div className="bg-blue-50 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {maintenanceRequests.filter(r => r.status === 'in_progress').length}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">In Progress</div>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {maintenanceRequests.filter(r => r.status === 'completed').length}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">Completed</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h3 className="font-semibold text-gray-700 mb-3">Status Legend</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+                    <span className="text-sm text-gray-600">Pending</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm text-gray-600">In Progress</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                    <span className="text-sm text-gray-600">Completed</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-indigo-600 rounded-full"></div>
+                    <span className="text-sm text-gray-600">Today</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Requests Modal */}
+        {/* Request Details Modal */}
         {showDetailsModal && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
             onClick={() => setShowDetailsModal(false)}
           >
             <div
-              className="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[80vh] overflow-y-auto"
+              className="bg-white rounded-xl w-full max-w-3xl p-6 max-h-[85vh] overflow-y-auto shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-gray-800">
-                  Requests on this Date ({selectedDateRequests.length})
+              <div className="flex justify-between items-center mb-6 pb-4 border-b">
+                <h3 className="text-2xl font-bold text-gray-800">
+                  Maintenance Requests ({selectedDateRequests.length})
                 </h3>
                 <button
                   onClick={() => setShowDetailsModal(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 text-3xl font-bold leading-none"
                 >
                   ×
                 </button>
               </div>
 
               <div className="space-y-4">
-                {selectedDateRequests.map((req) => (
-                  <div key={req.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-gray-800">
-                        Request #{req.id}
-                      </h4>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(req.status)}`}>
-                        {req.status.replace('_', ' ').toUpperCase()}
+                {selectedDateRequests.map((request) => (
+                  <div key={request.id} className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="font-semibold text-gray-800 text-lg flex items-center gap-2">
+                          <span>Request #{request.id}</span>
+                        </h4>
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
+                          <Clock className="w-4 h-4" />
+                          <span>{new Date(request.created_at).toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}</span>
+                        </div>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(request.status)}`}>
+                        {request.status?.replace('_', ' ').toUpperCase()}
                       </span>
                     </div>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p><strong>Type:</strong> {req.request_type}</p>
-                      <p><strong>Building:</strong> {req.building?.name || 'N/A'}</p>
-                      <p><strong>Room:</strong> {req.room}</p>
-                      <p><strong>Description:</strong> {req.description}</p>
-                      {req.assigned_to && (
-                        <p><strong>Assigned to:</strong> {req.assigned_to.username}</p>
-                      )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm bg-gray-50 rounded-lg p-4">
+                      <div className="space-y-2">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                          <div>
+                            <p className="text-gray-600 font-medium">Location</p>
+                            <p className="text-gray-800">
+                              {request.building?.name || 'N/A'}
+                              {request.room && `, Room ${request.room}`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <User className="w-4 h-4 text-gray-400 mt-0.5" />
+                          <div>
+                            <p className="text-gray-600 font-medium">Requester</p>
+                            <p className="text-gray-800">{request.requester_name || 'N/A'}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {request.assigned_to_details && (
+                          <div className="flex items-start gap-2">
+                            <User className="w-4 h-4 text-gray-400 mt-0.5" />
+                            <div>
+                              <p className="text-gray-600 font-medium">Assigned To</p>
+                              <p className="text-gray-800">{request.assigned_to_details.username}</p>
+                            </div>
+                          </div>
+                        )}
+                        {request.role && (
+                          <div className="flex items-start gap-2">
+                            <User className="w-4 h-4 text-gray-400 mt-0.5" />
+                            <div>
+                              <p className="text-gray-600 font-medium">Role</p>
+                              <p className="text-gray-800">{request.role}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
+
+                    {request.description && (
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <p className="text-sm font-medium text-gray-700 mb-2">Description</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                          {request.description}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -260,4 +370,4 @@ function Calendar() {
   );
 }
 
-export default Calendar;
+export default MaintenanceCalendar;

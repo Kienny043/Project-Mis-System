@@ -155,3 +155,28 @@ class UpdateStatusView(APIView):
         
         serializer = MaintenanceRequestSerializer(maintenance_request)
         return Response(serializer.data)
+    
+class MaintenanceDetailView(APIView):
+    """Get detailed information about a single maintenance request"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, pk):
+        try:
+            maintenance = MaintenanceRequest.objects.select_related(
+                'building', 'floor', 'room', 'assigned_to', 'created_by'
+            ).get(id=pk)
+        except MaintenanceRequest.DoesNotExist:
+            return Response({"error": "Request not found"}, status=404)
+        
+        serializer = MaintenanceRequestSerializer(maintenance)
+        
+        # Also include schedule if exists
+        schedule = None
+        if hasattr(maintenance, 'schedule'):
+            from calendar_system.serializers import MaintenanceScheduleSerializer
+            schedule = MaintenanceScheduleSerializer(maintenance.schedule).data
+        
+        return Response({
+            "request": serializer.data,
+            "schedule": schedule
+        })

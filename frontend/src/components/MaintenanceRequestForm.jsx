@@ -3,6 +3,7 @@ import api from '../api/axios'
 import Header from './Header';
 import Footer from '../components/Footer.jsx'
 import { Upload, MapPin, User, Briefcase, FileText, Camera, CheckCircle } from 'lucide-react';
+import { redirect, Navigate } from 'react-router-dom';
 
 function MaintenanceRequestForm({ onSuccess }) {
   const [buildings, setBuildings] = useState([]);
@@ -195,7 +196,7 @@ function MaintenanceRequestForm({ onSuccess }) {
   return (
     <>
       <Header showSearch={false} />
-        <div className="p-6 max-w-7xl min-h-screen flex flex-col mx-auto height: 100vh;">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-8">
@@ -276,6 +277,7 @@ function MaintenanceRequestForm({ onSuccess }) {
                         required
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white transition-all appearance-none"
                       >
+                        <option value='N/A'>N/A</option>
                         <option value="student">Student</option>
                         <option value="staff">Staff</option>
                         <option value="instructor">Instructor</option>

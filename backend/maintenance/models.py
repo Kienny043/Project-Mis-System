@@ -43,6 +43,14 @@ class MaintenanceRequest(models.Model):
         blank=True,
         related_name="maintenance_assigned_requests",
     )
+    
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_maintenance_requests"
+    )
 
     # Completion details
     completion_notes = models.TextField(null=True, blank=True)

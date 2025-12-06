@@ -328,7 +328,7 @@ function Dashboard() {
               <h3 className="text-lg font-semibold mb-4 text-gray-800">Quick Actions</h3>
               <div className="space-y-3">
                 <Link
-                  to="/calendar"
+                  to="/calendar-admin"
                   className="block w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-xl transition-colors text-center font-medium"
                 >
                   📅 View Calendar
