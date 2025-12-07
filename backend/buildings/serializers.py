@@ -1,25 +1,53 @@
+# locations/serializers.py
+
 from rest_framework import serializers
 from .models import Building, Floor, Room
 
 
-class RoomSerializer(serializers.ModelSerializer):
+class BuildingSerializer(serializers.ModelSerializer):
+    """Serialize building with only essential fields"""
     class Meta:
-        model = Room
-        fields = "__all__"
+        model = Building
+        fields = ['id', 'name', 'has_floors', 'total_floors']
 
 
 class FloorSerializer(serializers.ModelSerializer):
-    rooms = RoomSerializer(many=True, read_only=True)
-
+    """Serialize floor with simplified building info"""
+    building_name = serializers.CharField(source='building.name', read_only=True)
+    
     class Meta:
         model = Floor
-        fields = "__all__"
+        fields = ['id', 'building', 'building_name', 'number', 'label']
 
 
-class BuildingSerializer(serializers.ModelSerializer):
-    floors = FloorSerializer(many=True, read_only=True)
-    rooms = RoomSerializer(many=True, read_only=True)
+class RoomSerializer(serializers.ModelSerializer):
+    """Serialize room with simplified building and floor info"""
+    building_name = serializers.CharField(source='building.name', read_only=True)
+    floor_label = serializers.CharField(source='floor.label', read_only=True, allow_null=True)
+    floor_number = serializers.IntegerField(source='floor.number', read_only=True, allow_null=True)
+    
+    class Meta:
+        model = Room
+        fields = ['id', 'building', 'building_name', 'floor', 'floor_label', 'floor_number', 'name', 'room_type']
 
+
+# For nested serialization in maintenance requests
+class BuildingSimpleSerializer(serializers.ModelSerializer):
+    """Simple building serializer for nested use"""
     class Meta:
         model = Building
-        fields = "__all__"
+        fields = ['id', 'name']
+
+
+class FloorSimpleSerializer(serializers.ModelSerializer):
+    """Simple floor serializer for nested use"""
+    class Meta:
+        model = Floor
+        fields = ['id', 'number', 'label']
+
+
+class RoomSimpleSerializer(serializers.ModelSerializer):
+    """Simple room serializer for nested use"""
+    class Meta:
+        model = Room
+        fields = ['id', 'name']

@@ -113,48 +113,26 @@ class CompleteRequestView(APIView):
 
 
 # ✅ FIXED: Update status endpoint
-class UpdateStatusView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+def post(self, request, pk):
+    try:
+        maintenance_request = MaintenanceRequest.objects.get(id=pk)
+    except MaintenanceRequest.DoesNotExist:
+        return Response({"error": "Request not found"}, status=404)
     
-    def post(self, request, pk):
-        try:
-            maintenance_request = MaintenanceRequest.objects.get(id=pk)
-        except MaintenanceRequest.DoesNotExist:
-            return Response({"error": "Request not found"}, status=404)
-        
-        # Update status
-        status = request.data.get('status')
-        if status:
-            maintenance_request.status = status
-        
-        # ✅ CRITICAL FIX: Handle assigned_to
-        assigned_to = request.data.get('assigned_to')
-        if assigned_to:
-            try:
-                # Convert to integer and get the User
-                user_id = int(assigned_to)
-                user = User.objects.get(id=user_id)
-                maintenance_request.assigned_to = user
-                print(f"✅ Assigned request #{pk} to user: {user.username} (ID: {user_id})")
-            except (ValueError, User.DoesNotExist) as e:
-                print(f"❌ Error assigning user: {e}")
-                return Response({"error": f"Invalid user ID: {assigned_to}"}, status=400)
-        
-        # Update notes
-        notes = request.data.get('notes', '')
-        if notes:
-            maintenance_request.completion_notes = notes
-        
-        # Handle image upload
-        if request.FILES.get('image'):
-            maintenance_request.completion_photo = request.FILES['image']
-        
-        # Save the changes
-        maintenance_request.save()
-        print(f"✅ Saved maintenance request #{pk} - assigned_to: {maintenance_request.assigned_to}")
-        
-        serializer = MaintenanceRequestSerializer(maintenance_request)
-        return Response(serializer.data)
+    # Use the serializer to validate and save
+    serializer = CompleteRequestSerializer(
+        maintenance_request, 
+        data=request.data, 
+        partial=True
+    )
+    
+    if serializer.is_valid():
+        serializer.save()
+        # Return the full request data
+        response_serializer = MaintenanceRequestSerializer(maintenance_request)
+        return Response(response_serializer.data)
+    
+    return Response(serializer.errors, status=400)
     
 class MaintenanceDetailView(APIView):
     """Get detailed information about a single maintenance request"""
